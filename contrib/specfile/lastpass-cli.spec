@@ -1,46 +1,45 @@
 Name:           lastpass-cli
-Version:        0.4.0
-Release:        2%{?dist}
-Summary:        C99 command line interface to LastPass.com
+Version:        1.0.0
+Release:        1
+Summary:        LastPass command line interface tool
+License:        GPL-2.0
+Group:          Productivity/Security
+Url:            https://github.com/LastPass/lastpass-cli
+Source:         https://github.com/lastpass/lastpass-cli/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
-License:        GPLv2
-URL:            https://github.com/LastPass/lastpass-cli
-Source0:        lastpass-cli-0.4.0.tgz
-
-BuildRequires:  openssl-devel,libxml2-devel,libcurl-devel,asciidoc
-Requires:       openssl,libcurl,libxml2,pinentry,xclip
+BuildRequires:  gcc automake
+BuildRequires:  openssl-devel libxml2-devel libcurl-devel asciidoc
+BuildRequires:  pkgconfig(bash-completion)
+Requires:       /usr/bin/pinentry
+Requires:       openssl libcurl libxml2 xclip
 
 %description
-A command line interface to LastPass.com. Made open source and available on
-github.
+LastPass is a freemium password management service which stores encrypted
+passwords in the cloud. This package provided it's command line interface
+tool.
 
 %prep
 %setup -q
 
-
 %build
-make %{?_smp_mflags}
-
+CFLAGS="${CFLAGS:-%optflags}" LDFLAGS="${LDFLAGS:-%__global_ldflags}" make %{?_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
-%make_install
-make install-doc DESTDIR=%{?buildroot}
+%make_install install-doc
+
+# Setup bash completion
+bashcompdir=$(pkg-config --variable=completionsdir bash-completion)
+install -Dpm 644 contrib/lpass_bash_completion %{buildroot}$bashcompdir/lpass
 
 
 %files
-/usr/bin/lpass
-/usr/share/man/man1/lpass.1.gz
-%doc
-
-
+%{_bindir}/lpass
+%{_mandir}/man1/lpass.1.*
+%license COPYING
+%license LICENSE.OpenSSL
+%doc README.md
+%doc CONTRIBUTING
+%doc contrib/examples
+%{_datadir}/bash-completion/
 
 %changelog
-* Tue Dec 30 2014 Rohan Ferris - 0.4.0-2
-- Include asciidoc
-
-* Tue Dec 30 2014 Rohan Ferris - 0.4.0-1
-- Version number bump
-
-* Fri Nov  7 2014 Rohan Ferris
-- 
